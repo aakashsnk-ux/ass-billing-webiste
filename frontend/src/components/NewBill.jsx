@@ -104,14 +104,14 @@ export default function NewBill({ prefillClient, clearPrefill, onSaved }) {
 
   async function handleSave(downloadPdf) {
     if (!clientName.trim()) {
-      alert("Client name daaliye.");
+      alert("Customer Name Needed.");
       return;
     }
     const cleanItems = items
       .map((it) => ({ desc: it.desc.trim(), qty: Number(it.qty) || 0, rate: Number(it.rate) || 0 }))
       .filter((it) => it.desc || it.qty || it.rate);
     if (cleanItems.length === 0) {
-      alert("Kam se kam ek item add kariye.");
+      alert("At least one item is required.");
       return;
     }
 
@@ -134,9 +134,9 @@ export default function NewBill({ prefillClient, clearPrefill, onSaved }) {
       const next = await api.getNextBillNo().catch(() => ({ billNo: "" }));
       resetForm(next.billNo);
       onSaved();
-      alert("Bill save ho gaya" + (downloadPdf ? " aur download ho raha hai." : "."));
+      alert("Bill save" + (downloadPdf ? "Downloding." : "."));
     } catch (e) {
-      alert(e.message || "Kuch galat ho gaya.");
+      alert(e.message || "Something Went Wrong.");
     } finally {
       setSaving(false);
     }
@@ -145,14 +145,14 @@ export default function NewBill({ prefillClient, clearPrefill, onSaved }) {
   return (
     <div>
       <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
-        <h3 className="font-semibold mb-1">Client</h3>
+        <h3 className="font-semibold mb-1">Customer</h3>
         <div className="relative" ref={boxRef}>
-          <label className="block text-xs text-ink-soft mt-2 mb-1">Client name</label>
+          <label className="block text-xs text-ink-soft mt-2 mb-1">Customer name</label>
           <input
             type="text"
             value={clientName}
             onChange={(e) => onClientNameChange(e.target.value)}
-            placeholder="Type to search or add new client"
+            placeholder="Type to search or add new Customer"
             className="h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 text-sm outline-none transition placeholder:text-slate-400 focus:border-accent focus:bg-white"
             autoComplete="off"
           />
@@ -274,15 +274,7 @@ export default function NewBill({ prefillClient, clearPrefill, onSaved }) {
             <span>Subtotal</span>
             <span>{money(subtotal)}</span>
           </div>
-          <div className="flex justify-between items-center text-sm py-0.5">
-            <span>Tax (%)</span>
-            <input
-              type="number"
-              value={taxPercent}
-              onChange={(e) => setTaxPercent(e.target.value)}
-              className="w-[70px] border border-gray-200 rounded-lg px-1.5 py-1 text-right text-sm focus:outline-none focus:border-accent"
-            />
-          </div>
+          
           <div className="flex justify-between text-[17px] font-bold border-t border-gray-200 mt-1.5 pt-2">
             <span>Total</span>
             <span>{money(total)}</span>

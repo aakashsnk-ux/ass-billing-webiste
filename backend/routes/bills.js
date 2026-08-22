@@ -70,6 +70,41 @@ router.post("/", async (req, res) => {
   res.status(201).json(bill);
 });
 
+// PUT /api/bills/:id  -> bill me kuch bhi edit karo
+router.put("/:id", async (req, res) => {
+  const { clientName, clientPhone, clientAddress, billNo, date, items, taxPercent, notes } = req.body;
+
+  const bill = await Bill.findById(req.params.id);
+  if (!bill) return res.status(404).json({ error: "Bill not found" });
+
+  if (!clientName || !clientName.trim()) return res.status(400).json({ error: "Client name is required" });
+  if (!Array.isArray(items) || items.length === 0) return res.status(400).json({ error: "At least one item is required" });
+
+  const cleanItems = items.map((it) => {
+    const qty = Number(it.qty) || 0;
+    const rate = Number(it.rate) || 0;
+    return { desc: String(it.desc || ""), qty, rate, amount: qty * rate };
+  });
+  const subtotal = cleanItems.reduce((sum, it) => sum + it.amount, 0);
+  const taxPct = Number(taxPercent) || 0;
+  const tax = (subtotal * taxPct) / 100;
+
+  bill.billNo = billNo || bill.billNo;
+  bill.date = date || bill.date;
+  bill.clientName = clientName.trim();
+  bill.clientPhone = clientPhone || "";
+  bill.clientAddress = clientAddress || "";
+  bill.items = cleanItems;
+  bill.subtotal = subtotal;
+  bill.taxPercent = taxPct;
+  bill.tax = tax;
+  bill.total = subtotal + tax;
+  bill.notes = notes || "";
+
+  await bill.save();
+  res.json(bill);
+});
+
 // DELETE /api/bills/:id
 router.delete("/:id", async (req, res) => {
   const bill = await Bill.findByIdAndDelete(req.params.id);

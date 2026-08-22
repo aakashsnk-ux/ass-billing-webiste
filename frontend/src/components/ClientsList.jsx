@@ -46,12 +46,10 @@ export default function ClientsList({ refreshKey, onUseClient }) {
       {/* Heading */}
       <div>
         <h2 className="text-2xl font-bold tracking-tight">
-          Clients
+          Customer List
         </h2>
 
-        <p className="mt-1 text-sm text-slate-500">
-          Select a client to create a new bill
-        </p>
+        
       </div>
 
       {/* Search */}
@@ -92,10 +90,6 @@ export default function ClientsList({ refreshKey, onUseClient }) {
             <h3 className="font-semibold">
               No clients found
             </h3>
-
-            <p className="mt-1 text-sm text-slate-500">
-              Koi client save nahi hai.
-            </p>
           </div>
         )}
 

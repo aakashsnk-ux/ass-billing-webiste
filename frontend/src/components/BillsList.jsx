@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { api } from "../api.js";
 import { downloadBillPdf } from "../pdf.js";
+import EditBill from "./EditBill.jsx";
 
 function money(n) {
   return (Math.round((n || 0) * 100) / 100).toFixed(2);
@@ -10,6 +11,7 @@ export default function BillsList({ refreshKey }) {
   const [bills, setBills] = useState([]);
   const [query, setQuery] = useState("");
   const [activeBill, setActiveBill] = useState(null);
+  const [editing, setEditing] = useState(false);
   const [loading, setLoading] = useState(true);
 
   async function load(q) {
@@ -36,7 +38,7 @@ export default function BillsList({ refreshKey }) {
   }, [query]);
 
   async function handleDelete(id) {
-    if (!confirm("Ye bill delete karna hai?")) return;
+    if (!confirm("You Want to delete this bill?")) return;
 
     await api.deleteBill(id);
     setActiveBill(null);
@@ -50,9 +52,6 @@ export default function BillsList({ refreshKey }) {
         <h2 className="text-2xl font-bold tracking-tight">
           Your Bills
         </h2>
-        <p className="mt-1 text-sm text-slate-500">
-          Search and manage your invoices
-        </p>
       </div>
 
       {/* Search */}
@@ -66,7 +65,7 @@ export default function BillsList({ refreshKey }) {
             type="text"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search client or bill number..."
+            placeholder="Search Customer or bill number..."
             className="h-11 w-full rounded-xl border border-slate-200 bg-slate-50 pl-9 pr-3 text-sm outline-none transition placeholder:text-slate-400 focus:border-accent focus:bg-white"
           />
         </div>
@@ -93,9 +92,6 @@ export default function BillsList({ refreshKey }) {
               No bills found
             </h3>
 
-            <p className="mt-1 text-sm text-slate-500">
-              Abhi tak koi bill nahi bana.
-            </p>
           </div>
         )}
 
@@ -233,10 +229,7 @@ export default function BillsList({ refreshKey }) {
                   <span>₹ {money(activeBill.subtotal)}</span>
                 </div>
 
-                <div className="flex justify-between py-1 text-sm text-slate-600">
-                  <span>Tax</span>
-                  <span>₹ {money(activeBill.tax)}</span>
-                </div>
+                {/*   */}
 
                 <div className="mt-2 flex justify-between border-t border-slate-200 pt-3 text-lg font-bold">
                   <span>Total</span>
@@ -268,6 +261,14 @@ export default function BillsList({ refreshKey }) {
 
                 <button
                   type="button"
+                  onClick={() => setEditing(true)}
+                  className="h-12 rounded-xl border border-slate-200 px-4 font-semibold text-slate-700 transition active:scale-[0.98]"
+                >
+                  Edit Bill
+                </button>
+
+                <button
+                  type="button"
                   onClick={() => handleDelete(activeBill._id)}
                   className="h-12 rounded-xl border border-red-200 bg-red-50 px-4 font-semibold text-red-600 transition active:scale-[0.98]"
                 >
@@ -277,6 +278,18 @@ export default function BillsList({ refreshKey }) {
             </div>
           </div>
         </div>
+      )}
+
+      {editing && activeBill && (
+        <EditBill
+          bill={activeBill}
+          onClose={() => setEditing(false)}
+          onSaved={(updated) => {
+            setEditing(false);
+            setActiveBill(updated);
+            load(query);
+          }}
+        />
       )}
     </div>
   );

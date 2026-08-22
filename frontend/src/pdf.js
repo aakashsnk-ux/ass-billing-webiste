@@ -140,11 +140,15 @@ function drawTextInCell(
   } = options;
 
   doc.setFontSize(fontSize);
-  doc.setFont(undefined, bold ? "bold" : "normal");
+  doc.setFont("NotoSans", bold ? "bold" : "normal");
   doc.setTextColor(...color);
 
   const maxWidth = w - padding * 2;
-  const lines = doc.splitTextToSize(String(text || ""), maxWidth);
+
+  const lines = doc.splitTextToSize(
+    String(text || ""),
+    maxWidth
+  );
 
   const lineHeight = fontSize + 2;
 
@@ -154,7 +158,11 @@ function drawTextInCell(
     startY = y + padding + fontSize;
   } else {
     const textHeight = lines.length * lineHeight;
-    startY = y + (h - textHeight) / 2 + fontSize;
+
+    startY =
+      y +
+      (h - textHeight) / 2 +
+      fontSize;
   }
 
   lines.forEach((line, index) => {
@@ -168,121 +176,254 @@ function drawTextInCell(
       textX = x + w - padding;
     }
 
-    doc.text(line, textX, startY + index * lineHeight, {
-      align,
-    });
+    doc.text(
+      line,
+      textX,
+      startY + index * lineHeight,
+      {
+        align,
+      }
+    );
   });
 }
 
 function drawHeader(doc, bill) {
-  const pageW = doc.internal.pageSize.getWidth();
+  const pageW =
+    doc.internal.pageSize.getWidth();
 
   const margin = 28;
-  const contentW = pageW - margin * 2;
+
+  const contentW =
+    pageW - margin * 2;
 
   let y = 28;
 
   // ---------------------------------------------------------
-  // TOP SELLER HEADER
+  // HEADER BOX
   // ---------------------------------------------------------
 
-  drawCell(doc, margin, y, contentW, 78, {
-    lineColor: [30, 30, 30],
-    lineWidth: 1,
-  });
+  const headerH = 78;
 
-  // Left logo-style box
-  drawCell(doc, margin + 10, y + 10, 58, 58, {
-    lineColor: [40, 40, 40],
-    lineWidth: 1,
-  });
+  drawCell(
+    doc,
+    margin,
+    y,
+    contentW,
+    headerH,
+    {
+      lineColor: [30, 30, 30],
+      lineWidth: 1,
+    }
+  );
+
+  // ---------------------------------------------------------
+  // LOGO - KEEP AT TOP LEFT
+  // ---------------------------------------------------------
+
+  drawCell(
+    doc,
+    margin + 10,
+    y + 10,
+    58,
+    58,
+    {
+      lineColor: [40, 40, 40],
+      lineWidth: 1,
+    }
+  );
 
   doc.addImage(
-  logo,
-  "JPEG",
-  margin + 10,
-  y + 10,
-  58,
-  58
-);
+    logo,
+    "JPEG",
+    margin + 10,
+    y + 10,
+    58,
+    58
+  );
+
+  // ---------------------------------------------------------
+  // CENTER AREA
+  // ---------------------------------------------------------
+
+  const centerLeft =
+    margin + 78;
+
+  const centerRight =
+    pageW - margin - 8;
+
+  const centerW =
+    centerRight - centerLeft;
+
+  const centerX =
+    centerLeft + centerW / 2;
+
+  // ---------------------------------------------------------
+  // SELLER NAME
+  // ---------------------------------------------------------
+
+  doc.setFont(
+    "NotoSans",
+    "bold"
+  );
 
   doc.setFontSize(17);
-doc.setFont("NotoSans", "bold");
-doc.setTextColor(180, 0, 0);
-doc.text("Aakash S Sonawane", margin + 80, y + 25);
 
-// reset for remaining header text
-doc.setFont("NotoSans", "normal");
-doc.setTextColor(35, 35, 35);
+  doc.setTextColor(
+    180,
+    0,
+    0
+  );
 
-  doc.setFontSize(10);
-  doc.setFont("NotoSans", "normal");
+  doc.text(
+    "Aakash S Sonawane",
+    centerX,
+    y + 25,
+    {
+      align: "center",
+    }
+  );
+
+  // ---------------------------------------------------------
+  // SERVICE LINE
+  // ---------------------------------------------------------
+
+  doc.setFont(
+    "NotoSans",
+    "bold"
+  );
+
+  doc.setFontSize(9.5);
+
+  doc.setTextColor(
+    35,
+    35,
+    35
+  );
 
   doc.text(
     "Computer, Laptop, CCTV, P2P Services & Repairing",
-    margin + 80,
-    y + 42
+    centerX,
+    y + 42,
+    {
+      align: "center",
+    }
   );
+
+  // ---------------------------------------------------------
+  // ADDRESS
+  // ---------------------------------------------------------
+
+  doc.setFont(
+    "NotoSans",
+    "normal"
+  );
+
+  doc.setFontSize(7.5);
+
+  const address =
+    "C-502, Millennium Square, Nr Adajan Kharwasa Road, Dindoli, Surat - 394210";
+
+  const addressLines =
+    doc.splitTextToSize(
+      address,
+      centerW
+    );
 
   doc.text(
-    "C-502, Millennium Square, Nr Adajan Kharwasa Road,",
-    margin + 80,
-    y + 56
+    addressLines,
+    centerX,
+    y + 56,
+    {
+      align: "center",
+    }
   );
+
+  // ---------------------------------------------------------
+  // MOBILE + EMAIL - ONE LINE
+  // ---------------------------------------------------------
+
+  doc.setFont(
+    "NotoSans",
+    "normal"
+  );
+
+  doc.setFontSize(7.8);
 
   doc.text(
-    "Dindoli, Surat - 394210",
-    margin + 80,
-    y + 69
+    "Mob.: 9021554449    |    E-mail: aakashsonawane4449@gmail.com",
+    centerX,
+    y + 70,
+    {
+      align: "center",
+    }
   );
 
-  // Right contact area
-  const rightX = pageW - margin - 190;
+  // ---------------------------------------------------------
+  // IMPORTANT:
+  // MOVE EVERYTHING BELOW HEADER DOWN
+  // ---------------------------------------------------------
 
-  doc.setFontSize(9);
-  doc.setFont("NotoSans", "bold");
-  doc.text("Mob.", rightX, y + 25);
-
-  doc.setFont("NotoSans", "normal");
-  doc.text("9021554449", rightX + 35, y + 25);
-
-  doc.setFont("NotoSans", "bold");
-  doc.text("E-mail", rightX, y + 42);
-
-  doc.setFont("NotoSans", "normal");
-  doc.text("aakashsonawane4449@gmail.com", rightX + 35, y + 42);
-
-  doc.setFont("NotoSans", "bold");
-  doc.text("Services", rightX, y + 58.5);
-
-  doc.setFont("NotoSans", "normal");
-  doc.text("Computer / CCTV", rightX + 40, y + 59);
-
-  y += 86;
+  y += headerH + 10;
 
   // ---------------------------------------------------------
   // BILL TO / INVOICE DETAILS
   // ---------------------------------------------------------
 
-  const detailsH = 92;
-  const leftW = contentW * 0.68;
-  const rightW = contentW - leftW;
+  const detailsH = 78;
 
-  drawCell(doc, margin, y, leftW, detailsH, {
-    lineColor: [30, 100, 160],
-  });
+  const leftW =
+    contentW * 0.68;
 
-  drawCell(doc, margin + leftW, y, rightW, detailsH, {
-    lineColor: [30, 100, 160],
-  });
+  const rightW =
+    contentW - leftW;
 
-  // Bill to heading
+  drawCell(
+    doc,
+    margin,
+    y,
+    leftW,
+    detailsH,
+    {
+      lineColor: [30, 100, 160],
+    }
+  );
+
+  drawCell(
+    doc,
+    margin + leftW,
+    y,
+    rightW,
+    detailsH,
+    {
+      lineColor: [30, 100, 160],
+    }
+  );
+
+  // ---------------------------------------------------------
+  // BILL TO
+  // ---------------------------------------------------------
+
   doc.setFontSize(10);
-  doc.setFont("NotoSans", "bold");
-  doc.setTextColor(30, 30, 30);
-  doc.text("BILL TO", margin + 10, y + 17);
+
+  doc.setFont(
+    "NotoSans",
+    "bold"
+  );
+
+  doc.setTextColor(
+    30,
+    30,
+    30
+  );
+
+  doc.text(
+    "BILL TO",
+    margin + 10,
+    y + 17
+  );
 
   doc.setFontSize(11);
+
   doc.text(
     bill.clientName || "",
     margin + 10,
@@ -290,208 +431,304 @@ doc.setTextColor(35, 35, 35);
   );
 
   doc.setFontSize(9);
-  doc.setFont("NotoSans", "normal");
 
-  let clientY = y + 49;
+  doc.setFont(
+    "NotoSans",
+    "normal"
+  );
+
+  let clientY =
+    y + 49;
 
   if (bill.clientAddress) {
-    const addressLines = doc.splitTextToSize(
-      bill.clientAddress,
-      leftW - 100
-    );
+    const addressLines =
+      doc.splitTextToSize(
+        bill.clientAddress,
+        leftW - 100
+      );
 
-    addressLines.slice(0, 3).forEach((line) => {
-      doc.text(line, margin + 10, clientY);
-      clientY += 12;
-    });
+    addressLines
+      .slice(0, 2)
+      .forEach((line) => {
+        doc.text(
+          line,
+          margin + 10,
+          clientY
+        );
+
+        clientY += 10;
+      });
   }
 
   if (bill.clientPhone) {
     doc.text(
-      "Phone: " + bill.clientPhone,
+      "Phone: " +
+        bill.clientPhone,
       margin + 10,
-      Math.min(clientY, y + detailsH - 10)
+      Math.min(
+        clientY,
+        y + detailsH - 8
+      )
     );
   }
 
-  // Right invoice information
+  // ---------------------------------------------------------
+  // DATE / BILL NO
+  // ---------------------------------------------------------
 
-  const infoX = margin + leftW;
+  const infoX =
+    margin + leftW;
 
   doc.setFontSize(9);
-  doc.setFont("NotoSans", "bold");
-  doc.text("DATE", infoX + 10, y + 18);
 
-  doc.setFont("NotoSans", "normal");
+  doc.setFont(
+    "NotoSans",
+    "bold"
+  );
+
+  doc.text(
+    "DATE",
+    infoX + 10,
+    y + 18
+  );
+
+  doc.setFont(
+    "NotoSans",
+    "normal"
+  );
+
   doc.text(
     formatDate(bill.date),
     infoX + 55,
     y + 18
   );
 
-  doc.setFont("NotoSans", "bold");
-  doc.text("BILL NO.", infoX + 10, y + 38);
+  doc.setFont(
+    "NotoSans",
+    "bold"
+  );
 
-  doc.setFont("NotoSans", "normal");
+  doc.text(
+    "BILL NO.",
+    infoX + 10,
+    y + 38
+  );
+
+  doc.setFont(
+    "NotoSans",
+    "normal"
+  );
+
   doc.text(
     bill.billNo || "",
     infoX + 55,
     y + 38
   );
 
-  // Invoice title
-  doc.setFontSize(16);
-  doc.setFont("NotoSans", "bold");
-  doc.setTextColor(200, 0, 0);
+  y += detailsH + 10;
+
+  // ---------------------------------------------------------
+  // SEPARATE INVOICE BOX
+  // ---------------------------------------------------------
+
+  const invoiceBoxH = 34;
+
+  drawCell(
+    doc,
+    margin,
+    y,
+    contentW,
+    invoiceBoxH,
+    {
+      lineColor: [30, 100, 160],
+      lineWidth: 1,
+    }
+  );
+
+  doc.setFontSize(15);
+
+  doc.setFont(
+    "NotoSans",
+    "bold"
+  );
+
+  doc.setTextColor(
+    200,
+    0,
+    0
+  );
 
   doc.text(
     "INVOICE",
-    infoX + rightW / 2,
-    y + 67,
+    pageW / 2,
+    y + 23,
     {
       align: "center",
     }
   );
 
-  return y + detailsH + 12;
+  return (
+    y +
+    invoiceBoxH +
+    10
+  );
 }
 
 function formatDate(date) {
   if (!date) return "";
 
-  const d = new Date(date);
+  const d =
+    new Date(date);
 
-  if (Number.isNaN(d.getTime())) {
+  if (
+    Number.isNaN(
+      d.getTime()
+    )
+  ) {
     return date;
   }
 
-  const day = String(d.getDate()).padStart(2, "0");
-  const month = String(d.getMonth() + 1).padStart(2, "0");
-  const year = d.getFullYear();
+  const day =
+    String(
+      d.getDate()
+    ).padStart(2, "0");
+
+  const month =
+    String(
+      d.getMonth() + 1
+    ).padStart(2, "0");
+
+  const year =
+    d.getFullYear();
 
   return `${day}-${month}-${year}`;
 }
 
-function drawItemsTable(doc, bill, startY) {
-  const pageW = doc.internal.pageSize.getWidth();
+function drawItemsTable(
+  doc,
+  bill,
+  startY
+) {
+  const pageW =
+    doc.internal.pageSize.getWidth();
+
   const margin = 28;
-  const contentW = pageW - margin * 2;
+
+  const contentW =
+    pageW - margin * 2;
 
   let y = startY;
 
-  // Column widths
+  // ---------------------------------------------------------
+  // COLUMN ORDER:
+  // SR. NO | DESCRIPTION | WARRANTY | QTY | RATE | AMOUNT
+  // ---------------------------------------------------------
+
   const srW = 34;
-  const qtyW = 55;
-  const rateW = 82;
-  const amountW = 95;
+
+  const warrantyW = 68;
+
+  const qtyW = 42;
+
+  const rateW = 68;
+
+  const amountW = 78;
 
   const descW =
-    contentW - srW - qtyW - rateW - amountW;
+    contentW -
+    srW -
+    warrantyW -
+    qtyW -
+    rateW -
+    amountW;
 
-  const xSr = margin;
-  const xDesc = xSr + srW;
-  const xQty = xDesc + descW;
-  const xRate = xQty + qtyW;
-  const xAmount = xRate + rateW;
+  const xSr =
+    margin;
+
+  const xDesc =
+    xSr + srW;
+
+  const xWarranty =
+    xDesc + descW;
+
+  const xQty =
+    xWarranty + warrantyW;
+
+  const xRate =
+    xQty + qtyW;
+
+  const xAmount =
+    xRate + rateW;
 
   // ---------------------------------------------------------
   // TABLE HEADER
   // ---------------------------------------------------------
 
-  const headerH = 30;
+  const headerH = 24;
 
-  drawCell(doc, xSr, y, srW, headerH);
-  drawCell(doc, xDesc, y, descW, headerH);
-  drawCell(doc, xQty, y, qtyW, headerH);
-  drawCell(doc, xRate, y, rateW, headerH);
-  drawCell(doc, xAmount, y, amountW, headerH);
+  const drawTableHeader =
+    () => {
+      drawCell(
+        doc,
+        xSr,
+        y,
+        srW,
+        headerH
+      );
 
-  drawTextInCell(doc, "SR. NO", xSr, y, srW, headerH, {
-    fontSize: 8,
-    bold: true,
-    align: "center",
-  });
+      drawCell(
+        doc,
+        xDesc,
+        y,
+        descW,
+        headerH
+      );
 
-  drawTextInCell(
-    doc,
-    "DESCRIPTION",
-    xDesc,
-    y,
-    descW,
-    headerH,
-    {
-      fontSize: 8,
-      bold: true,
-      align: "center",
-    }
-  );
+      drawCell(
+        doc,
+        xWarranty,
+        y,
+        warrantyW,
+        headerH
+      );
 
-  drawTextInCell(doc, "QTY", xQty, y, qtyW, headerH, {
-    fontSize: 8,
-    bold: true,
-    align: "center",
-  });
+      drawCell(
+        doc,
+        xQty,
+        y,
+        qtyW,
+        headerH
+      );
 
-  drawTextInCell(doc, "RATE", xRate, y, rateW, headerH, {
-    fontSize: 8,
-    bold: true,
-    align: "center",
-  });
+      drawCell(
+        doc,
+        xRate,
+        y,
+        rateW,
+        headerH
+      );
 
-  drawTextInCell(
-    doc,
-    "AMOUNT",
-    xAmount,
-    y,
-    amountW,
-    headerH,
-    {
-      fontSize: 8,
-      bold: true,
-      align: "center",
-    }
-  );
+      drawCell(
+        doc,
+        xAmount,
+        y,
+        amountW,
+        headerH
+      );
 
-  y += headerH;
-
-  // ---------------------------------------------------------
-  // ITEM ROWS
-  // ---------------------------------------------------------
-
-  const minRowH = 40;
-  const availableBottom = 650;
-
-  bill.items.forEach((item, index) => {
-    const desc = item.desc || "";
-
-    const descLines = doc.splitTextToSize(
-      desc,
-      descW - 12
-    );
-
-    const rowH = Math.max(
-      minRowH,
-      descLines.length * 12 + 18
-    );
-
-    // New page if required
-    if (y + rowH > availableBottom) {
-      doc.addPage();
-
-      y = 40;
-
-      // Repeat table header
-      drawCell(doc, xSr, y, srW, headerH);
-      drawCell(doc, xDesc, y, descW, headerH);
-      drawCell(doc, xQty, y, qtyW, headerH);
-      drawCell(doc, xRate, y, rateW, headerH);
-      drawCell(doc, xAmount, y, amountW, headerH);
-
-      drawTextInCell(doc, "SR. NO", xSr, y, srW, headerH, {
-        fontSize: 8,
-        bold: true,
-        align: "center",
-      });
+      drawTextInCell(
+        doc,
+        "SR. NO",
+        xSr,
+        y,
+        srW,
+        headerH,
+        {
+          fontSize: 7.5,
+          bold: true,
+          align: "center",
+        }
+      );
 
       drawTextInCell(
         doc,
@@ -501,7 +738,21 @@ function drawItemsTable(doc, bill, startY) {
         descW,
         headerH,
         {
-          fontSize: 8,
+          fontSize: 7.5,
+          bold: true,
+          align: "center",
+        }
+      );
+
+      drawTextInCell(
+        doc,
+        "WARRANTY",
+        xWarranty,
+        y,
+        warrantyW,
+        headerH,
+        {
+          fontSize: 7.5,
           bold: true,
           align: "center",
         }
@@ -515,7 +766,7 @@ function drawItemsTable(doc, bill, startY) {
         qtyW,
         headerH,
         {
-          fontSize: 8,
+          fontSize: 7.5,
           bold: true,
           align: "center",
         }
@@ -529,7 +780,7 @@ function drawItemsTable(doc, bill, startY) {
         rateW,
         headerH,
         {
-          fontSize: 8,
+          fontSize: 7.5,
           bold: true,
           align: "center",
         }
@@ -543,106 +794,237 @@ function drawItemsTable(doc, bill, startY) {
         amountW,
         headerH,
         {
-          fontSize: 8,
+          fontSize: 7.5,
           bold: true,
           align: "center",
         }
       );
 
       y += headerH;
-    }
+    };
 
-    drawCell(doc, xSr, y, srW, rowH);
-    drawCell(doc, xDesc, y, descW, rowH);
-    drawCell(doc, xQty, y, qtyW, rowH);
-    drawCell(doc, xRate, y, rateW, rowH);
-    drawCell(doc, xAmount, y, amountW, rowH);
-
-    drawTextInCell(
-      doc,
-      String(index + 1),
-      xSr,
-      y,
-      srW,
-      rowH,
-      {
-        fontSize: 8,
-        align: "center",
-      }
-    );
-
-    drawTextInCell(
-      doc,
-      desc,
-      xDesc,
-      y,
-      descW,
-      rowH,
-      {
-        fontSize: 9,
-        valign: "top",
-        padding: 6,
-      }
-    );
-
-    drawTextInCell(
-      doc,
-      String(item.qty ?? 0),
-      xQty,
-      y,
-      qtyW,
-      rowH,
-      {
-        fontSize: 9,
-        align: "center",
-      }
-    );
-
-    drawTextInCell(
-      doc,
-      money(item.rate),
-      xRate,
-      y,
-      rateW,
-      rowH,
-      {
-        fontSize: 9,
-        align: "right",
-      }
-    );
-
-    drawTextInCell(
-      doc,
-      money(item.amount),
-      xAmount,
-      y,
-      amountW,
-      rowH,
-      {
-        fontSize: 9,
-        align: "right",
-      }
-    );
-
-    y += rowH;
-  });
+  drawTableHeader();
 
   // ---------------------------------------------------------
-  // TOTAL ROW
+  // COMPACT PRODUCT ROWS
+  // ---------------------------------------------------------
+
+  const minRowH = 23;
+
+  const availableBottom = 650;
+
+  (
+    bill.items || []
+  ).forEach(
+    (item, index) => {
+      const desc =
+        item.desc || "";
+
+      const warranty =
+        item.warranty || "";
+
+      const descLines =
+        doc.splitTextToSize(
+          desc,
+          descW - 10
+        );
+
+      const warrantyLines =
+        doc.splitTextToSize(
+          warranty,
+          warrantyW - 10
+        );
+
+      const rowH =
+        Math.max(
+          minRowH,
+          descLines.length *
+            9 +
+            10,
+          warrantyLines.length *
+            8 +
+            10
+        );
+
+      if (
+        y + rowH >
+        availableBottom
+      ) {
+        doc.addPage();
+
+        y = 40;
+
+        drawTableHeader();
+      }
+
+      drawCell(
+        doc,
+        xSr,
+        y,
+        srW,
+        rowH
+      );
+
+      drawCell(
+        doc,
+        xDesc,
+        y,
+        descW,
+        rowH
+      );
+
+      drawCell(
+        doc,
+        xWarranty,
+        y,
+        warrantyW,
+        rowH
+      );
+
+      drawCell(
+        doc,
+        xQty,
+        y,
+        qtyW,
+        rowH
+      );
+
+      drawCell(
+        doc,
+        xRate,
+        y,
+        rateW,
+        rowH
+      );
+
+      drawCell(
+        doc,
+        xAmount,
+        y,
+        amountW,
+        rowH
+      );
+
+      drawTextInCell(
+        doc,
+        String(index + 1),
+        xSr,
+        y,
+        srW,
+        rowH,
+        {
+          fontSize: 8,
+          align: "center",
+        }
+      );
+
+      drawTextInCell(
+        doc,
+        desc,
+        xDesc,
+        y,
+        descW,
+        rowH,
+        {
+          fontSize: 8,
+          valign: "top",
+          padding: 5,
+        }
+      );
+
+      drawTextInCell(
+        doc,
+        warranty,
+        xWarranty,
+        y,
+        warrantyW,
+        rowH,
+        {
+          fontSize: 7.5,
+          align: "center",
+        }
+      );
+
+      drawTextInCell(
+        doc,
+        String(
+          item.qty ?? 0
+        ),
+        xQty,
+        y,
+        qtyW,
+        rowH,
+        {
+          fontSize: 8,
+          align: "center",
+        }
+      );
+
+      drawTextInCell(
+        doc,
+        money(item.rate),
+        xRate,
+        y,
+        rateW,
+        rowH,
+        {
+          fontSize: 8,
+          align: "right",
+        }
+      );
+
+      drawTextInCell(
+        doc,
+        money(item.amount),
+        xAmount,
+        y,
+        amountW,
+        rowH,
+        {
+          fontSize: 8,
+          align: "right",
+        }
+      );
+
+      y += rowH;
+    }
+  );
+
+  // ---------------------------------------------------------
+  // TOTAL
   // ---------------------------------------------------------
 
   const totalH = 26;
 
-  drawCell(doc, xSr, y, srW + descW + qtyW + rateW, totalH);
+  const totalLabelW =
+    srW +
+    descW +
+    warrantyW +
+    qtyW +
+    rateW;
 
-  drawCell(doc, xAmount, y, amountW, totalH);
+  drawCell(
+    doc,
+    xSr,
+    y,
+    totalLabelW,
+    totalH
+  );
+
+  drawCell(
+    doc,
+    xAmount,
+    y,
+    amountW,
+    totalH
+  );
 
   drawTextInCell(
     doc,
     "TOTAL",
     xSr,
     y,
-    srW + descW + qtyW + rateW,
+    totalLabelW,
     totalH,
     {
       fontSize: 10,
@@ -654,7 +1036,8 @@ function drawItemsTable(doc, bill, startY) {
 
   drawTextInCell(
     doc,
-    "₹ " + money(bill.total),
+    "₹ " +
+      money(bill.total),
     xAmount,
     y,
     amountW,
@@ -667,30 +1050,67 @@ function drawItemsTable(doc, bill, startY) {
     }
   );
 
-  y += totalH;
-
-  return y;
+  return (
+    y + totalH
+  );
 }
 
-function drawSummary(doc, bill, startY) {
-  const pageW = doc.internal.pageSize.getWidth();
+function drawSummary(
+  doc,
+  bill,
+  startY
+) {
+  const pageW =
+    doc.internal.pageSize.getWidth();
+
   const margin = 28;
-  const contentW = pageW - margin * 2;
 
-  let y = startY + 10;
+  const contentW =
+    pageW - margin * 2;
 
-  const leftW = contentW * 0.62;
-  const rightW = contentW - leftW;
+  let y =
+    startY + 10;
+
+  const leftW =
+    contentW * 0.62;
+
+  const rightW =
+    contentW - leftW;
 
   const summaryH = 78;
 
-  drawCell(doc, margin, y, leftW, summaryH);
-  drawCell(doc, margin + leftW, y, rightW, summaryH);
+  drawCell(
+    doc,
+    margin,
+    y,
+    leftW,
+    summaryH
+  );
 
-  // Amount in words
+  drawCell(
+    doc,
+    margin + leftW,
+    y,
+    rightW,
+    summaryH
+  );
+
+  // ---------------------------------------------------------
+  // RUPEES IN WORDS
+  // ---------------------------------------------------------
+
   doc.setFontSize(8);
-  doc.setFont("NotoSans", "bold");
-  doc.setTextColor(30, 30, 30);
+
+  doc.setFont(
+    "NotoSans",
+    "bold"
+  );
+
+  doc.setTextColor(
+    30,
+    30,
+    30
+  );
 
   doc.text(
     "RUPEES IN WORDS",
@@ -699,14 +1119,22 @@ function drawSummary(doc, bill, startY) {
   );
 
   doc.setFontSize(9);
-  doc.setFont("NotoSans", "normal");
 
-  const words = amountInWords(bill.total);
-
-  const wordLines = doc.splitTextToSize(
-    words,
-    leftW - 16
+  doc.setFont(
+    "NotoSans",
+    "normal"
   );
+
+  const words =
+    amountInWords(
+      bill.total
+    );
+
+  const wordLines =
+    doc.splitTextToSize(
+      words,
+      leftW - 16
+    );
 
   doc.text(
     wordLines,
@@ -714,12 +1142,19 @@ function drawSummary(doc, bill, startY) {
     y + 33
   );
 
-  // Right summary
-  const rightX = margin + leftW;
+  // ---------------------------------------------------------
+  // RIGHT SUMMARY
+  // ---------------------------------------------------------
+
+  const rightX =
+    margin + leftW;
 
   doc.setFontSize(9);
 
-  doc.setFont("NotoSans", "normal");
+  doc.setFont(
+    "NotoSans",
+    "normal"
+  );
 
   doc.text(
     "Subtotal",
@@ -728,7 +1163,10 @@ function drawSummary(doc, bill, startY) {
   );
 
   doc.text(
-    "₹ " + money(bill.subtotal),
+    "₹ " +
+      money(
+        bill.subtotal
+      ),
     pageW - margin - 8,
     y + 18,
     {
@@ -736,7 +1174,11 @@ function drawSummary(doc, bill, startY) {
     }
   );
 
-  if (Number(bill.taxPercent) > 0) {
+  if (
+    Number(
+      bill.taxPercent
+    ) > 0
+  ) {
     doc.text(
       `Tax (${bill.taxPercent}%)`,
       rightX + 8,
@@ -744,7 +1186,8 @@ function drawSummary(doc, bill, startY) {
     );
 
     doc.text(
-      "₹ " + money(bill.tax),
+      "₹ " +
+        money(bill.tax),
       pageW - margin - 8,
       y + 35,
       {
@@ -753,7 +1196,10 @@ function drawSummary(doc, bill, startY) {
     );
   }
 
-  doc.setFont("NotoSans", "bold");
+  doc.setFont(
+    "NotoSans",
+    "bold"
+  );
 
   doc.text(
     "TOTAL",
@@ -762,7 +1208,8 @@ function drawSummary(doc, bill, startY) {
   );
 
   doc.text(
-    "₹ " + money(bill.total),
+    "₹ " +
+      money(bill.total),
     pageW - margin - 8,
     y + 58,
     {
@@ -770,30 +1217,61 @@ function drawSummary(doc, bill, startY) {
     }
   );
 
-  return y + summaryH;
+  return (
+    y + summaryH
+  );
 }
 
-function drawFooterSections(doc, bill, startY) {
-  const pageW = doc.internal.pageSize.getWidth();
+function drawFooterSections(
+  doc,
+  bill,
+  startY
+) {
+  const pageW =
+    doc.internal.pageSize.getWidth();
+
   const margin = 28;
-  const contentW = pageW - margin * 2;
 
-  let y = startY + 12;
+  const contentW =
+    pageW - margin * 2;
+
+  let y =
+    startY + 12;
 
   // ---------------------------------------------------------
-  // BANK DETAILS + RECEIVER DETAILS
+  // BANK DETAILS
   // ---------------------------------------------------------
 
-  const leftW = contentW * 0.65;
-  const rightW = contentW - leftW;
+  const leftW =
+    contentW * 0.65;
 
-  const bankH = 108;
+  const rightW =
+    contentW - leftW;
 
-  drawCell(doc, margin, y, leftW, bankH);
-  drawCell(doc, margin + leftW, y, rightW, bankH);
+  const bankH = 90;
+
+  drawCell(
+    doc,
+    margin,
+    y,
+    leftW,
+    bankH
+  );
+
+  drawCell(
+    doc,
+    margin + leftW,
+    y,
+    rightW,
+    bankH
+  );
 
   doc.setFontSize(9);
-  doc.setFont("NotoSans", "bold");
+
+  doc.setFont(
+    "NotoSans",
+    "bold"
+  );
 
   doc.text(
     "BANK DETAILS",
@@ -801,97 +1279,130 @@ function drawFooterSections(doc, bill, startY) {
     y + 16
   );
 
-  doc.setFont("NotoSans", "normal");
+  doc.setFont(
+    "NotoSans",
+    "normal"
+  );
+
   doc.setFontSize(8);
 
   const bankRows = [
-    ["Bank Name", "BANK OF INDIA"],
-    ["Branch Name", "GHODDOD ROAD"],
-    ["IFSC Code", "BKID0002743"],
-    ["UPI ID", "aakash.sonawane@boi"],
+    [
+      "Bank Name",
+      "BANK OF INDIA",
+    ],
+    [
+      "Branch Name",
+      "GHODDOD ROAD",
+    ],
+    [
+      "IFSC Code",
+      "BKID0002743",
+    ],
+    [
+      "UPI ID",
+      "aakash.sonawane@boi",
+    ],
   ];
 
-  let bankY = y + 34;
+  let bankY =
+    y + 34;
 
-  bankRows.forEach(([label, value]) => {
-    doc.setFont("NotoSans", "bold");
-    doc.text(label + " :", margin + 8, bankY);
+  bankRows.forEach(
+    ([label, value]) => {
+      doc.setFont(
+        "NotoSans",
+        "bold"
+      );
 
-    doc.setFont("NotoSans", "normal");
+      doc.text(
+        label + " :",
+        margin + 8,
+        bankY
+      );
 
-    doc.text(
-      value,
-      margin + 75,
-      bankY
-    );
+      doc.setFont(
+        "NotoSans",
+        "normal"
+      );
 
-    bankY += 17;
-  });
+      doc.text(
+        value,
+        margin + 75,
+        bankY
+      );
 
-  // Receiver / signatory
-  const signX = margin + leftW;
+      bankY += 15;
+    }
+  );
+
+  const signX =
+    margin + leftW;
 
   doc.setFontSize(8);
-  doc.setFont("NotoSans", "bold");
 
-  doc.text(
-    "RECEIVER DETAILS",
-    signX + 8,
-    y + 16
+  doc.setFont(
+    "NotoSans",
+    "bold"
   );
-
-  doc.setFont("NotoSans", "normal");
-
-  doc.text(
-    "Name: __________________",
-    signX + 8,
-    y + 43
-  );
-
-  doc.text(
-    "Sign: ___________________",
-    signX + 8,
-    y + 64
-  );
-
-  doc.setFont("NotoSans", "bold");
 
   doc.text(
     "For- Aakash S Sonawane",
     signX + 8,
-    y + 86
+    y + 28
+  );
+
+  doc.setFont(
+    "NotoSans",
+    "normal"
   );
 
   doc.text(
     "Authorised Signatory",
-    signX + rightW / 2,
-    y + 99,
+    signX +
+      rightW / 2,
+    y + 48,
     {
       align: "center",
     }
   );
 
-  y += bankH + 10;
+  y +=
+    bankH + 10;
 
   // ---------------------------------------------------------
-  // NOTES
+  // EXISTING DYNAMIC NOTES
   // ---------------------------------------------------------
 
   if (bill.notes) {
-    const noteLines = doc.splitTextToSize(
-      bill.notes,
-      contentW - 16
-    );
+    const noteLines =
+      doc.splitTextToSize(
+        bill.notes,
+        contentW - 16
+      );
 
-    const notesH = Math.max(
-      48,
-      noteLines.length * 12 + 28
-    );
+    const notesH =
+      Math.max(
+        48,
+        noteLines.length *
+          11 +
+          28
+      );
 
-    drawCell(doc, margin, y, contentW, notesH);
+    drawCell(
+      doc,
+      margin,
+      y,
+      contentW,
+      notesH
+    );
 
     doc.setFontSize(9);
-    doc.setFont("NotoSans", "bold");
+
+    doc.setFont(
+      "NotoSans",
+      "bold"
+    );
 
     doc.text(
       "NOTES",
@@ -899,7 +1410,11 @@ function drawFooterSections(doc, bill, startY) {
       y + 16
     );
 
-    doc.setFont("NotoSans", "normal");
+    doc.setFont(
+      "NotoSans",
+      "normal"
+    );
+
     doc.setFontSize(8);
 
     doc.text(
@@ -908,12 +1423,118 @@ function drawFooterSections(doc, bill, startY) {
       y + 31
     );
 
-    y += notesH + 10;
+    y +=
+      notesH + 10;
   }
+
+  // ---------------------------------------------------------
+  // RECEIVER DETAILS + TERMS & CONDITIONS
+  // SAME BOX
+  // ---------------------------------------------------------
+
+  const combinedH =
+    100;
+
+  const receiverW =
+    contentW * 0.38;
+
+  const termsW =
+    contentW - receiverW;
+
+  // One outer box
+  drawCell(
+    doc,
+    margin,
+    y,
+    contentW,
+    combinedH
+  );
+
+  // Vertical divider
+  doc.setDrawColor(
+    30,
+    100,
+    160
+  );
+
+  doc.setLineWidth(
+    0.8
+  );
+
+  doc.line(
+    margin + receiverW,
+    y,
+    margin + receiverW,
+    y + combinedH
+  );
+
+  // ---------------------------------------------------------
+  // RECEIVER DETAILS
+  // ---------------------------------------------------------
+
+  doc.setFontSize(9);
+
+  doc.setFont(
+    "NotoSans",
+    "bold"
+  );
+
+  doc.text(
+    "RECEIVER DETAILS",
+    margin + 8,
+    y + 16
+  );
+
+  doc.setFontSize(8);
+
+  doc.setFont(
+    "NotoSans",
+    "normal"
+  );
+
+  doc.text(
+    "Name: __________________",
+    margin + 8,
+    y + 38
+  );
+
+  doc.text(
+    "Sign: ___________________",
+    margin + 8,
+    y + 59
+  );
+
+  // Existing signatory retained
+  doc.setFont(
+    "NotoSans",
+    "bold"
+  );
+
+  doc.text(
+    "For- Aakash S Sonawane",
+    margin + 8,
+    y + 81
+  );
 
   // ---------------------------------------------------------
   // TERMS & CONDITIONS
   // ---------------------------------------------------------
+
+  const termsX =
+    margin + receiverW;
+
+  doc.setFontSize(9);
+
+  doc.setFont(
+    "NotoSans",
+    "bold"
+  );
+
+  doc.text(
+    "TERMS & CONDITIONS",
+    termsX + 8,
+    y + 16
+  );
 
   const terms = [
     "Burn/Water/Physical damages are Not Covered.",
@@ -921,128 +1542,208 @@ function drawFooterSections(doc, bill, startY) {
     "Our workshop will not be held liable for any loss of data.",
   ];
 
-  const termsH = 72;
+  doc.setFontSize(7.5);
 
-  drawCell(doc, margin, y, contentW, termsH);
-
-  doc.setFontSize(9);
-  doc.setFont("NotoSans", "bold");
-
-  doc.text(
-    "TERMS & CONDITIONS",
-    margin + 8,
-    y + 16
+  doc.setFont(
+    "NotoSans",
+    "normal"
   );
 
-  doc.setFontSize(8);
-  doc.setFont("NotoSans", "normal");
+  let termY =
+    y + 32;
 
-  let termY = y + 31;
+  terms.forEach(
+    (term, index) => {
+      const lines =
+        doc.splitTextToSize(
+          `${index + 1}. ${term}`,
+          termsW - 16
+        );
 
-  terms.forEach((term) => {
-    const lines = doc.splitTextToSize(
-      "• " + term,
-      contentW - 16
-    );
+      doc.text(
+        lines,
+        termsX + 8,
+        termY
+      );
 
-    doc.text(
-      lines,
-      margin + 8,
-      termY
-    );
+      termY +=
+        lines.length *
+          9 +
+        4;
+    }
+  );
 
-    termY += lines.length * 10 + 4;
-  });
-
-  return y + termsH;
+  return (
+    y + combinedH
+  );
 }
 
-export async function downloadBillPdf(bill) {
-  const doc = new jsPDF({
-    unit: "pt",
-    format: "a4",
-  });
+export async function downloadBillPdf(
+  bill
+) {
+  const doc =
+    new jsPDF({
+      unit: "pt",
+      format: "a4",
+    });
 
-  const font = await fetch(notoSans)
-    .then((res) => res.arrayBuffer());
+  // ---------------------------------------------------------
+  // REGULAR FONT
+  // ---------------------------------------------------------
 
-  const bytes = new Uint8Array(font);
+  const font =
+    await fetch(notoSans)
+      .then((res) =>
+        res.arrayBuffer()
+      );
+
+  const bytes =
+    new Uint8Array(font);
 
   let binary = "";
-  for (let i = 0; i < bytes.length; i++) {
-    binary += String.fromCharCode(bytes[i]);
+
+  for (
+    let i = 0;
+    i < bytes.length;
+    i++
+  ) {
+    binary += String.fromCharCode(
+      bytes[i]
+    );
   }
 
-  const base64 = btoa(binary);
+  const base64 =
+    btoa(binary);
 
-  doc.addFileToVFS("NotoSans-Regular.ttf", base64);
+  doc.addFileToVFS(
+    "NotoSans-Regular.ttf",
+    base64
+  );
+
   doc.addFont(
-  "NotoSans-Regular.ttf",
-  "NotoSans",
-  "normal"
-);
+    "NotoSans-Regular.ttf",
+    "NotoSans",
+    "normal"
+  );
 
-doc.setFont("NotoSans", "normal");
+  doc.setFont(
+    "NotoSans",
+    "normal"
+  );
 
+  // ---------------------------------------------------------
+  // BOLD FONT
+  // ---------------------------------------------------------
 
-const boldFont = await fetch(notoSansBold)
-  .then((res) => res.arrayBuffer());
+  const boldFont =
+    await fetch(notoSansBold)
+      .then((res) =>
+        res.arrayBuffer()
+      );
 
-const boldBytes = new Uint8Array(boldFont);
+  const boldBytes =
+    new Uint8Array(
+      boldFont
+    );
 
-let boldBinary = "";
-for (let i = 0; i < boldBytes.length; i++) {
-  boldBinary += String.fromCharCode(boldBytes[i]);
-}
+  let boldBinary = "";
 
-const boldBase64 = btoa(boldBinary);
+  for (
+    let i = 0;
+    i < boldBytes.length;
+    i++
+  ) {
+    boldBinary +=
+      String.fromCharCode(
+        boldBytes[i]
+      );
+  }
 
-doc.addFileToVFS(
-  "NotoSans-Bold.ttf",
-  boldBase64
-);
+  const boldBase64 =
+    btoa(boldBinary);
 
-doc.addFont(
-  "NotoSans-Bold.ttf",
-  "NotoSans",
-  "bold"
-);
+  doc.addFileToVFS(
+    "NotoSans-Bold.ttf",
+    boldBase64
+  );
 
-  // tumhara existing PDF code...
+  doc.addFont(
+    "NotoSans-Bold.ttf",
+    "NotoSans",
+    "bold"
+  );
 
+  // ---------------------------------------------------------
+  // PAGE SIZE
+  // ---------------------------------------------------------
 
-  const pageW = doc.internal.pageSize.getWidth();
-  const pageH = doc.internal.pageSize.getHeight();
+  const pageW =
+    doc.internal.pageSize.getWidth();
+
+  const pageH =
+    doc.internal.pageSize.getHeight();
 
   // ---------------------------------------------------------
   // PAGE 1
   // ---------------------------------------------------------
 
-  let y = drawHeader(doc, bill);
+  let y =
+    drawHeader(
+      doc,
+      bill
+    );
 
-  y = drawItemsTable(doc, bill, y);
+  y =
+    drawItemsTable(
+      doc,
+      bill,
+      y
+    );
 
-  // If there isn't enough room for summary/footer,
-  // move them to a fresh page.
-  if (y > pageH - 270) {
+  // ---------------------------------------------------------
+  // SUMMARY
+  // ---------------------------------------------------------
+
+  if (
+    y >
+    pageH - 270
+  ) {
     doc.addPage();
+
     y = 40;
   }
 
-  y = drawSummary(doc, bill, y);
+  y =
+    drawSummary(
+      doc,
+      bill,
+      y
+    );
 
-  // Footer sections
-  if (y > pageH - 220) {
+  // ---------------------------------------------------------
+  // FOOTER
+  // ---------------------------------------------------------
+
+  if (
+    y >
+    pageH - 250
+  ) {
     doc.addPage();
+
     y = 40;
   }
 
-  drawFooterSections(doc, bill, y);
+  drawFooterSections(
+    doc,
+    bill,
+    y
+  );
 
   // ---------------------------------------------------------
-  // SAVE
+  // SAVE PDF
   // ---------------------------------------------------------
 
-  doc.save(`${bill.billNo || "invoice"}.pdf`);
+  doc.save(
+    `${bill.billNo || "invoice"}.pdf`
+  );
 }
-

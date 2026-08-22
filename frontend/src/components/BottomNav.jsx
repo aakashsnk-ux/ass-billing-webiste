@@ -13,7 +13,7 @@ const tabs = [
   },
   {
     key: "clients",
-    label: "Clients",
+    label: "Customers",
     icon: "◍",
   },
 ];
