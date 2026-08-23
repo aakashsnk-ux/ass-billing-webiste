@@ -43,10 +43,18 @@ router.post("/", async (req, res) => {
   }
 
   const cleanItems = items.map((it) => {
-    const qty = Number(it.qty) || 0;
-    const rate = Number(it.rate) || 0;
-    return { desc: String(it.desc || ""), qty, rate, amount: qty * rate };
-  });
+  const qty = Number(it.qty) || 0;
+  const rate = Number(it.rate) || 0;
+  const warranty = String(it.warranty || "").trim();
+
+  return {
+    desc: String(it.desc || ""),
+    qty,
+    rate,
+    warranty,
+    amount: qty * rate,
+  };
+});
   const subtotal = cleanItems.reduce((sum, it) => sum + it.amount, 0);
   const taxPct = Number(taxPercent) || 0;
   const tax = (subtotal * taxPct) / 100;
@@ -81,10 +89,18 @@ router.put("/:id", async (req, res) => {
   if (!Array.isArray(items) || items.length === 0) return res.status(400).json({ error: "At least one item is required" });
 
   const cleanItems = items.map((it) => {
-    const qty = Number(it.qty) || 0;
-    const rate = Number(it.rate) || 0;
-    return { desc: String(it.desc || ""), qty, rate, amount: qty * rate };
-  });
+  const qty = Number(it.qty) || 0;
+  const rate = Number(it.rate) || 0;
+  const warranty = String(it.warranty || "").trim();
+
+  return {
+    desc: String(it.desc || ""),
+    qty,
+    rate,
+    warranty,
+    amount: qty * rate,
+  };
+});
   const subtotal = cleanItems.reduce((sum, it) => sum + it.amount, 0);
   const taxPct = Number(taxPercent) || 0;
   const tax = (subtotal * taxPct) / 100;

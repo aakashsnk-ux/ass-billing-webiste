@@ -33,7 +33,7 @@ export default function BottomNav({ view, setView }) {
               className={`relative flex min-w-[76px] flex-1 flex-col items-center justify-center gap-1 rounded-xl px-2 py-2 transition ${
                 active
                   ? "text-accent"
-                  : "text-slate-400 hover:text-slate-600"
+                  : "text-black hover:text-slate-600"
               }`}
             >
               <span

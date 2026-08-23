@@ -5,6 +5,7 @@ const itemSchema = new mongoose.Schema(
     desc: { type: String, required: true },
     qty: { type: Number, required: true, default: 1 },
     rate: { type: Number, required: true, default: 0 },
+    warranty: { type: String, default: "" },
     amount: { type: Number, required: true, default: 0 },
   },
   { _id: false }

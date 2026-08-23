@@ -13,6 +13,21 @@ export default function BillsList({ refreshKey }) {
   const [activeBill, setActiveBill] = useState(null);
   const [editing, setEditing] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [downloading, setDownloading] = useState(false);
+
+  async function handleDownload() {
+  if (downloading) return;
+
+  setDownloading(true);
+
+  try {
+    await downloadBillPdf(activeBill);
+  } catch (e) {
+    alert(e.message || "Failed to download PDF.");
+  } finally {
+    setDownloading(false);
+  }
+}
 
   async function load(q) {
     setLoading(true);
@@ -41,8 +56,11 @@ export default function BillsList({ refreshKey }) {
     if (!confirm("You Want to delete this bill?")) return;
 
     await api.deleteBill(id);
-    setActiveBill(null);
-    load(query);
+setActiveBill(null);
+
+setBills((prev) =>
+  prev.filter((b) => b._id !== id)
+);
   }
 
   return (
@@ -204,15 +222,23 @@ export default function BillsList({ refreshKey }) {
                       key={i}
                       className="flex items-center justify-between gap-4 p-3.5"
                     >
-                      <div className="min-w-0">
-                        <p className="truncate text-sm font-medium">
-                          {it.desc}
-                        </p>
+                      <div className="min-w-0 flex-1">
+  <p className="text-sm font-medium break-words">
+    {it.desc}
+  </p>
 
-                        <p className="mt-0.5 text-xs text-slate-400">
-                          {it.qty} × ₹ {money(it.rate)}
-                        </p>
-                      </div>
+  <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-slate-400">
+    <span>
+      {it.qty} × ₹ {money(it.rate)}
+    </span>
+
+    {it.warranty && (
+      <span className="font-medium text-accent">
+        Warranty: {it.warranty}
+      </span>
+    )}
+  </div>
+</div>
 
                       <p className="shrink-0 text-sm font-semibold">
                         ₹ {money(it.amount)}
@@ -252,12 +278,20 @@ export default function BillsList({ refreshKey }) {
               {/* Actions */}
               <div className="mt-5 grid grid-cols-1 gap-2.5 sm:grid-cols-2">
                 <button
-                  type="button"
-                  onClick={() => downloadBillPdf(activeBill)}
-                  className="h-12 rounded-xl bg-accent px-4 font-bold text-white shadow-sm transition active:scale-[0.98]"
-                >
-                  Download PDF
-                </button>
+  type="button"
+  disabled={downloading}
+  onClick={handleDownload}
+  className="h-12 rounded-xl bg-accent px-4 font-bold text-white shadow-sm transition active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-70"
+>
+  {downloading ? (
+    <span className="flex items-center justify-center gap-2">
+      <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/40 border-t-white" />
+      Generating PDF...
+    </span>
+  ) : (
+    "Download PDF"
+  )}
+</button>
 
                 <button
                   type="button"
@@ -285,10 +319,13 @@ export default function BillsList({ refreshKey }) {
           bill={activeBill}
           onClose={() => setEditing(false)}
           onSaved={(updated) => {
-            setEditing(false);
-            setActiveBill(updated);
-            load(query);
-          }}
+  setEditing(false);
+  setActiveBill(updated);
+
+  setBills((prev) =>
+    prev.map((b) => (b._id === updated._id ? updated : b))
+  );
+}}
         />
       )}
     </div>

@@ -11,7 +11,7 @@ router.post("/login", (req, res) => {
   const okPassword = String(process.env.AUTH_PASSWORD || "");
 
   if (!okEmail || !okPassword) {
-    return res.status(500).json({ error: "Server par login setup nahi hai" });
+    return res.status(500).json({ error: "Login not setup on server" });
   }
 
   if (email !== okEmail || password !== okPassword) {

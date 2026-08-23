@@ -9,7 +9,7 @@ function todayStr() {
   return new Date().toISOString().slice(0, 10);
 }
 function emptyItem() {
-  return { desc: "", qty: 1, rate: "" };
+  return { desc: "", qty: 1, rate: "", warranty: "" };
 }
 
 export default function NewBill({ prefillClient, clearPrefill, onSaved }) {
@@ -19,6 +19,7 @@ export default function NewBill({ prefillClient, clearPrefill, onSaved }) {
   const [selectedClientId, setSelectedClientId] = useState(null);
   const [suggestions, setSuggestions] = useState([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
+  const [downloading, setDownloading] = useState(false);
 
   const [billNo, setBillNo] = useState("");
   const [date, setDate] = useState(todayStr());
@@ -29,8 +30,26 @@ export default function NewBill({ prefillClient, clearPrefill, onSaved }) {
 
   const boxRef = useRef(null);
 
+  async function handleDownloadPdf() {
+    if (!activeBill || downloading) return;
+
+    setDownloading(true);
+
+    try {
+      await downloadBillPdf(activeBill);
+    } catch (e) {
+      console.error("PDF download failed:", e);
+      alert("PDF download failed. Please try again.");
+    } finally {
+      setDownloading(false);
+    }
+  }
+
   useEffect(() => {
-    api.getNextBillNo().then((r) => setBillNo(r.billNo)).catch(() => {});
+    api
+      .getNextBillNo()
+      .then((r) => setBillNo(r.billNo))
+      .catch(() => {});
   }, []);
 
   useEffect(() => {
@@ -45,7 +64,8 @@ export default function NewBill({ prefillClient, clearPrefill, onSaved }) {
 
   useEffect(() => {
     function onDocClick(e) {
-      if (boxRef.current && !boxRef.current.contains(e.target)) setShowSuggestions(false);
+      if (boxRef.current && !boxRef.current.contains(e.target))
+        setShowSuggestions(false);
     }
     document.addEventListener("click", onDocClick);
     return () => document.removeEventListener("click", onDocClick);
@@ -77,7 +97,9 @@ export default function NewBill({ prefillClient, clearPrefill, onSaved }) {
   }
 
   function updateItem(idx, field, value) {
-    setItems((prev) => prev.map((it, i) => (i === idx ? { ...it, [field]: value } : it)));
+    setItems((prev) =>
+      prev.map((it, i) => (i === idx ? { ...it, [field]: value } : it)),
+    );
   }
   function removeItem(idx) {
     setItems((prev) => prev.filter((_, i) => i !== idx));
@@ -86,7 +108,10 @@ export default function NewBill({ prefillClient, clearPrefill, onSaved }) {
     setItems((prev) => [...prev, emptyItem()]);
   }
 
-  const subtotal = items.reduce((sum, it) => sum + (Number(it.qty) || 0) * (Number(it.rate) || 0), 0);
+  const subtotal = items.reduce(
+    (sum, it) => sum + (Number(it.qty) || 0) * (Number(it.rate) || 0),
+    0,
+  );
   const tax = (subtotal * (Number(taxPercent) || 0)) / 100;
   const total = subtotal + tax;
 
@@ -108,7 +133,12 @@ export default function NewBill({ prefillClient, clearPrefill, onSaved }) {
       return;
     }
     const cleanItems = items
-      .map((it) => ({ desc: it.desc.trim(), qty: Number(it.qty) || 0, rate: Number(it.rate) || 0 }))
+      .map((it) => ({
+        desc: it.desc.trim(),
+        qty: Number(it.qty) || 0,
+        rate: Number(it.rate) || 0,
+        warranty: String(it.warranty || "").trim(),
+      }))
       .filter((it) => it.desc || it.qty || it.rate);
     if (cleanItems.length === 0) {
       alert("At least one item is required.");
@@ -147,7 +177,9 @@ export default function NewBill({ prefillClient, clearPrefill, onSaved }) {
       <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
         <h3 className="font-semibold mb-1">Customer</h3>
         <div className="relative" ref={boxRef}>
-          <label className="block text-xs text-ink-soft mt-2 mb-1">Customer name</label>
+          <label className="block text-xs text-black mt-2 mb-1">
+            Customer name
+          </label>
           <input
             type="text"
             value={clientName}
@@ -171,7 +203,7 @@ export default function NewBill({ prefillClient, clearPrefill, onSaved }) {
             </div>
           )}
         </div>
-        <label className="block text-xs text-ink-soft mt-2 mb-1">Phone</label>
+        <label className="block text-xs text-black mt-2 mb-1">Phone</label>
         <input
           type="text"
           value={clientPhone}
@@ -179,7 +211,7 @@ export default function NewBill({ prefillClient, clearPrefill, onSaved }) {
           placeholder="Phone number"
           className="h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 text-sm outline-none transition placeholder:text-slate-400 focus:border-accent focus:bg-white"
         />
-        <label className="block text-xs text-ink-soft mt-2 mb-1">Address</label>
+        <label className="block text-xs text-black mt-2 mb-1">Address</label>
         <textarea
           value={clientAddress}
           onChange={(e) => setClientAddress(e.target.value)}
@@ -192,7 +224,9 @@ export default function NewBill({ prefillClient, clearPrefill, onSaved }) {
         <h3 className="font-semibold mb-1">Bill details</h3>
         <div className="flex gap-2">
           <div className="flex-1">
-            <label className="block text-xs text-ink-soft mt-2 mb-1">Bill no.</label>
+            <label className="block text-xs text-ink-soft mt-2 mb-1">
+              Bill no.
+            </label>
             <input
               type="text"
               value={billNo}
@@ -201,7 +235,9 @@ export default function NewBill({ prefillClient, clearPrefill, onSaved }) {
             />
           </div>
           <div className="flex-1">
-            <label className="block text-xs text-ink-soft mt-2 mb-1">Date</label>
+            <label className="block text-xs text-ink-soft mt-2 mb-1">
+              Date
+            </label>
             <input
               type="date"
               value={date}
@@ -212,78 +248,133 @@ export default function NewBill({ prefillClient, clearPrefill, onSaved }) {
         </div>
       </div>
 
-      <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
-        <h3 className="font-semibold mb-2">Items</h3>
-        <div className="grid grid-cols-[minmax(0,1fr)_42px_60px_68px_20px] gap-1.5 mb-1">
-          <span className="text-[11px] text-ink-soft">Description</span>
-          <span className="text-[11px] text-ink-soft">Qty</span>
-          <span className="text-[11px] text-ink-soft">Rate</span>
-          <span className="text-[11px] text-ink-soft text-right">Amount</span>
-          <span></span>
-        </div>
+      <p className="mt-5 px-3 mb-2 text-xs font-bold uppercase tracking-wider text-black">
+        Items
+      </p>
+
+      <div className="space-y-3">
         {items.map((it, idx) => (
           <div
-  key={idx}
-  className="grid grid-cols-[minmax(0,1fr)_42px_60px_68px_20px] gap-1.5 items-center mb-1.5"
->
-            <input
-              type="text"
-              value={it.desc}
-              onChange={(e) => updateItem(idx, "desc", e.target.value)}
-              placeholder="Item / service"
-              className="border border-gray-200 rounded-lg px-2 py-1.5 text-[13px] focus:outline-none focus:border-accent"
-            />
-            <input
-              type="number"
-              value={it.qty}
-              onChange={(e) => updateItem(idx, "qty", e.target.value)}
-              min="0"
-              className="border border-gray-200 rounded-lg px-2 py-1.5 text-[13px] focus:outline-none focus:border-accent"
-            />
-            <input
-              type="number"
-              value={it.rate}
-              onChange={(e) => updateItem(idx, "rate", e.target.value)}
-              min="0"
-              step="0.01"
-              className="border border-gray-200 rounded-lg px-2 py-1.5 text-[13px] focus:outline-none focus:border-accent"
-            />
-            <span className="text-[13px] text-ink-soft text-right pr-0.5">
-              {money((Number(it.qty) || 0) * (Number(it.rate) || 0))}
-            </span>
-            <button
-              type="button"
-              onClick={() => removeItem(idx)}
-              aria-label="Remove item"
-              className="text-red-600 text-lg leading-none"
-            >
-              ×
-            </button>
+            key={idx}
+            className="rounded-2xl border border-slate-300 bg-white p-3 sm:p-4"
+          >
+            {/* Item top */}
+            <div className="mb-3 flex items-center justify-between">
+              <span className="text-xs font-semibold text-slate-800">
+                Item {idx + 1}
+              </span>
+
+              <button
+                type="button"
+                onClick={() =>
+                  setItems((prev) => prev.filter((_, i) => i !== idx))
+                }
+                className="flex h-8 w-8 items-center justify-center rounded-lg text-lg text-red-500 transition hover:bg-red-50"
+                title="Remove item"
+              >
+                ×
+              </button>
+            </div>
+
+            {/* Description */}
+            <div>
+              <label className="mb-1 block text-[11px] font-medium text-black">
+                Description
+              </label>
+
+              <textarea
+                rows={1}
+                className="w-full resize-y rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm outline-none transition focus:border-accent"
+                value={it.desc}
+                onChange={(e) => updateItem(idx, "desc", e.target.value)}
+                placeholder="Enter item description..."
+              />
+            </div>
+
+            {/* Qty / Rate / Warranty */}
+            <div className="mt-3 grid grid-cols-3 gap-2">
+              {/* Qty */}
+              <div>
+                <label className="mb-1 block text-[11px] font-medium text-black">
+                  Qty
+                </label>
+
+                <input
+                  type="number"
+                  min="0"
+                  className="h-10 w-full rounded-xl border border-slate-200 bg-white px-2.5 text-sm outline-none transition focus:border-accent"
+                  value={it.qty}
+                  onChange={(e) => updateItem(idx, "qty", e.target.value)}
+                />
+              </div>
+
+              {/* Rate */}
+              <div>
+                <label className="mb-1 block text-[11px] font-medium text-black">
+                  Rate
+                </label>
+
+                <input
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  className="h-10 w-full rounded-xl border border-slate-200 bg-white px-2.5 text-sm outline-none transition focus:border-accent"
+                  value={it.rate}
+                  onChange={(e) => updateItem(idx, "rate", e.target.value)}
+                />
+              </div>
+
+              {/* Warranty */}
+              <div>
+                <label className="mb-1 block text-[11px] font-medium text-black">
+                  Warranty
+                </label>
+
+                <input
+                  type="text"
+                  className="h-10 w-full rounded-xl border border-slate-200 bg-white px-2.5 text-sm outline-none transition focus:border-accent"
+                  value={it.warranty}
+                  onChange={(e) => updateItem(idx, "warranty", e.target.value)}
+                  placeholder="1Y / 30D"
+                />
+              </div>
+            </div>
+
+            {/* Amount */}
+            <div className="mt-3 flex items-center justify-between rounded-xl bg-white px-3 py-2.5">
+              <span className="text-xs text-black">Item amount</span>
+
+              <span className="text-sm font-semibold text-black">
+                ₹ {money((Number(it.qty) || 0) * (Number(it.rate) || 0))}
+              </span>
+            </div>
           </div>
         ))}
-        <button
-          type="button"
-          onClick={addItem}
-          className="mt-1.5 border border-gray-200 rounded-lg px-3.5 py-2 text-sm"
-        >
-          + Add item
-        </button>
-
-        <div className="border-t border-dashed border-gray-200 mt-2.5 pt-2.5">
-          <div className="flex justify-between text-sm py-0.5">
-            <span>Subtotal</span>
-            <span>{money(subtotal)}</span>
-          </div>
-          
-          <div className="flex justify-between text-[17px] font-bold border-t border-gray-200 mt-1.5 pt-2">
-            <span>Total</span>
-            <span>{money(total)}</span>
-          </div>
-        </div>
       </div>
 
+      {/* Add item */}
+      <button
+        type="button"
+        onClick={() =>
+          setItems((prev) => [
+            ...prev,
+            {
+              desc: "",
+              qty: 1,
+              rate: "",
+              warranty: "",
+            },
+          ])
+        }
+        className="mt-3 flex h-11 w-full items-center justify-center rounded-xl border border-dashed border-slate-300 bg-white text-sm font-medium text-black mb-2 transition hover:bg-slate-100"
+      >
+        + Add item
+      </button>
+
       <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
-        <label className="block text-xs text-ink-soft mb-1">Notes (optional)</label>
+        <label className="block text-xs text-ink-soft mb-1">
+          Notes (optional)
+        </label>
         <textarea
           value={notes}
           onChange={(e) => setNotes(e.target.value)}
@@ -294,24 +385,32 @@ export default function NewBill({ prefillClient, clearPrefill, onSaved }) {
 
       <div className="flex gap-2 mt-3">
         <button
-          disabled={saving}
-          onClick={() => handleSave(true)}
+          type="button"
+          onClick={handleDownloadPdf}
+          disabled={downloading}
           className="flex-1 rounded-xl bg-accent px-4 py-3 text-sm font-bold text-white shadow-sm transition active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
         >
-          Save and download PDF
+          {downloading ? (
+            <span className="flex items-center justify-center gap-2">
+              <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/40 border-t-white" />
+              Generating PDF...
+            </span>
+          ) : (
+            "Save and download PDF"
+          )}
         </button>
       </div>
       <div className="flex gap-2 mt-2">
         <button
           disabled={saving}
           onClick={() => handleSave(false)}
-          className="flex-1 border border-gray-200 rounded-lg py-2.5 text-sm disabled:opacity-50"
+          className="flex-1 border border-blue-200 bg-blue-100 rounded-lg py-2.5 text-sm disabled:opacity-50"
         >
           Save only
         </button>
         <button
           onClick={() => resetForm(billNo)}
-          className="flex-1 border border-gray-200 rounded-lg py-2.5 text-sm"
+          className="flex-1 border border-red-200 bg-red-100 rounded-lg py-2.5 text-sm"
         >
           Clear form
         </button>
