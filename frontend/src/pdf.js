@@ -375,7 +375,7 @@ function drawHeader(doc, bill) {
   // BILL TO / INVOICE DETAILS
   // ---------------------------------------------------------
 
-  const detailsH = 68;
+  const detailsH = 78;
 
   const leftW =
     contentW * 0.68;
