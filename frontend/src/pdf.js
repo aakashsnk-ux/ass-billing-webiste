@@ -2,6 +2,8 @@ import { jsPDF } from "jspdf";
 import notoSans from "./assets/fonts/NotoSans-Regular.ttf";
 import notoSansBold from "./assets/fonts/NotoSans-Bold.ttf";
 import logo from "./assets/logo.jpeg";
+import logo2 from "./assets/logo2.jpeg";
+import upiQr from "./assets/upi-qr.jpeg";
 
 function money(n) {
   return (Math.round((Number(n) || 0) * 100) / 100).toFixed(2);
@@ -193,8 +195,7 @@ function drawHeader(doc, bill) {
 
   const margin = 28;
 
-  const contentW =
-    pageW - margin * 2;
+  const contentW = pageW - margin * 2;
 
   let y = 28;
 
@@ -220,36 +221,41 @@ function drawHeader(doc, bill) {
   // LOGO - KEEP AT TOP LEFT
   // ---------------------------------------------------------
 
-  drawCell(
-    doc,
-    margin + 10,
-    y + 10,
-    58,
-    58,
-    {
-      lineColor: [40, 40, 40],
-      lineWidth: 1,
-    }
-  );
+
 
   doc.addImage(
     logo,
     "JPEG",
-    margin + 10,
-    y + 10,
-    58,
-    58
+    margin + 13,
+    y + 13,
+    60,
+    60
   );
 
   // ---------------------------------------------------------
   // CENTER AREA
   // ---------------------------------------------------------
 
-  const centerLeft =
-    margin + 78;
+  const centerLeft = margin + 78;
+
+  // Keep a small symbol/logo area at the top-right.
+  const rightLogoSize = 60;
+  const rightLogoX =
+    pageW - margin - rightLogoSize - 8;
+
+
+
+  doc.addImage(
+  logo2,
+  "JPEG",
+  rightLogoX,
+  y + 7,
+  rightLogoSize,
+  rightLogoSize
+);
 
   const centerRight =
-    pageW - margin - 8;
+    rightLogoX - 6;
 
   const centerW =
     centerRight - centerLeft;
@@ -275,7 +281,7 @@ function drawHeader(doc, bill) {
   );
 
   doc.text(
-    "Aakash S Sonawane",
+    "AAKASH S SONAWANE",
     centerX,
     y + 25,
     {
@@ -321,7 +327,7 @@ function drawHeader(doc, bill) {
   doc.setFontSize(7.5);
 
   const address =
-    "C-502, Millennium Square, Nr Adajan Kharwasa Road, Dindoli, Surat - 394210";
+    "C-502, Millennium Square, Nr Kharwasa Road, Dindoli, Surat - 394210";
 
   const addressLines =
     doc.splitTextToSize(
@@ -363,13 +369,13 @@ function drawHeader(doc, bill) {
   // MOVE EVERYTHING BELOW HEADER DOWN
   // ---------------------------------------------------------
 
-  y += headerH + 10;
+  y += headerH + 6;
 
   // ---------------------------------------------------------
   // BILL TO / INVOICE DETAILS
   // ---------------------------------------------------------
 
-  const detailsH = 78;
+  const detailsH = 68;
 
   const leftW =
     contentW * 0.68;
@@ -463,7 +469,7 @@ function drawHeader(doc, bill) {
   if (bill.clientPhone) {
     doc.text(
       "Phone: " +
-        bill.clientPhone,
+      bill.clientPhone,
       margin + 10,
       Math.min(
         clientY,
@@ -525,13 +531,37 @@ function drawHeader(doc, bill) {
     y + 38
   );
 
-  y += detailsH + 10;
+  if (bill.creditDays !== undefined && bill.creditDays !== null && bill.creditDays !== "") {
+    doc.setFont(
+      "NotoSans",
+      "bold"
+    );
+
+    doc.text(
+      "CREDIT DAYS",
+      infoX + 10,
+      y + 58
+    );
+
+    doc.setFont(
+      "NotoSans",
+      "normal"
+    );
+
+    doc.text(
+      String(bill.creditDays),
+      infoX + 70,
+      y + 58
+    );
+  }
+
+  y += detailsH + 6;
 
   // ---------------------------------------------------------
   // SEPARATE INVOICE BOX
   // ---------------------------------------------------------
 
-  const invoiceBoxH = 34;
+  const invoiceBoxH = 24;
 
   drawCell(
     doc,
@@ -559,9 +589,9 @@ function drawHeader(doc, bill) {
   );
 
   doc.text(
-    "INVOICE",
+    "* INVOICE *",
     pageW / 2,
-    y + 23,
+    y + 17,
     {
       align: "center",
     }
@@ -570,7 +600,7 @@ function drawHeader(doc, bill) {
   return (
     y +
     invoiceBoxH +
-    10
+    6
   );
 }
 
@@ -839,11 +869,11 @@ function drawItemsTable(
         Math.max(
           minRowH,
           descLines.length *
-            9 +
-            10,
+          9 +
+          10,
           warrantyLines.length *
-            8 +
-            10
+          8 +
+          10
         );
 
       if (
@@ -994,7 +1024,7 @@ function drawItemsTable(
   // TOTAL
   // ---------------------------------------------------------
 
-  const totalH = 26;
+  const totalH = 22;
 
   const totalLabelW =
     srW +
@@ -1030,14 +1060,14 @@ function drawItemsTable(
       fontSize: 10,
       bold: true,
       align: "right",
-      padding: 8,
+      padding: 5,
     }
   );
 
   drawTextInCell(
     doc,
     "₹ " +
-      money(bill.total),
+    money(bill.total),
     xAmount,
     y,
     amountW,
@@ -1069,7 +1099,7 @@ function drawSummary(
     pageW - margin * 2;
 
   let y =
-    startY + 10;
+    startY + 6;
 
   const leftW =
     contentW * 0.62;
@@ -1077,7 +1107,7 @@ function drawSummary(
   const rightW =
     contentW - leftW;
 
-  const summaryH = 78;
+  const summaryH = 58;
 
   drawCell(
     doc,
@@ -1157,16 +1187,16 @@ function drawSummary(
   );
 
   doc.text(
-    "Subtotal",
+    "SUBTOTAL",
     rightX + 8,
     y + 18
   );
 
   doc.text(
     "₹ " +
-      money(
-        bill.subtotal
-      ),
+    money(
+      bill.subtotal
+    ),
     pageW - margin - 8,
     y + 18,
     {
@@ -1187,7 +1217,7 @@ function drawSummary(
 
     doc.text(
       "₹ " +
-        money(bill.tax),
+      money(bill.tax),
       pageW - margin - 8,
       y + 35,
       {
@@ -1204,14 +1234,14 @@ function drawSummary(
   doc.text(
     "TOTAL",
     rightX + 8,
-    y + 58
+    y + 46
   );
 
   doc.text(
     "₹ " +
-      money(bill.total),
+    money(bill.total),
     pageW - margin - 8,
-    y + 58,
+    y + 46,
     {
       align: "right",
     }
@@ -1236,7 +1266,7 @@ function drawFooterSections(
     pageW - margin * 2;
 
   let y =
-    startY + 12;
+    startY + 8;
 
   // ---------------------------------------------------------
   // BANK DETAILS
@@ -1248,7 +1278,7 @@ function drawFooterSections(
   const rightW =
     contentW - leftW;
 
-  const bankH = 90;
+  const bankH = 82;
 
   drawCell(
     doc,
@@ -1288,6 +1318,14 @@ function drawFooterSections(
 
   const bankRows = [
     [
+      "A/C Name",
+      "Aakash Santosh Sonawane",
+    ],
+    [
+      "A/C No.",
+      "274310110014545",
+    ],
+    [
       "Bank Name",
       "BANK OF INDIA",
     ],
@@ -1306,7 +1344,7 @@ function drawFooterSections(
   ];
 
   let bankY =
-    y + 34;
+    y + 28;
 
   bankRows.forEach(
     ([label, value]) => {
@@ -1332,8 +1370,25 @@ function drawFooterSections(
         bankY
       );
 
-      bankY += 15;
+      bankY += 9.5;
+
     }
+  );
+
+  // UPI QR - kept inside the bank details section.
+  const qrSize = 76;
+  const qrX =
+    margin + leftW - qrSize - 12;
+  const qrY =
+    y + 3;
+
+  doc.addImage(
+    upiQr,
+    "JPEG",
+    qrX,
+    qrY,
+    qrSize,
+    qrSize
   );
 
   const signX =
@@ -1349,7 +1404,7 @@ function drawFooterSections(
   doc.text(
     "For- Aakash S Sonawane",
     signX + 8,
-    y + 28
+    y + 15
   );
 
   doc.setFont(
@@ -1360,15 +1415,15 @@ function drawFooterSections(
   doc.text(
     "Authorised Signatory",
     signX +
-      rightW / 2,
-    y + 48,
+    rightW / 2,
+    y + 72,
     {
       align: "center",
     }
   );
 
   y +=
-    bankH + 10;
+    bankH + 6;
 
   // ---------------------------------------------------------
   // EXISTING DYNAMIC NOTES
@@ -1385,8 +1440,8 @@ function drawFooterSections(
       Math.max(
         48,
         noteLines.length *
-          11 +
-          28
+        11 +
+        28
       );
 
     drawCell(
@@ -1427,156 +1482,147 @@ function drawFooterSections(
       notesH + 10;
   }
 
-  // ---------------------------------------------------------
-  // RECEIVER DETAILS + TERMS & CONDITIONS
-  // SAME BOX
-  // ---------------------------------------------------------
+// ---------------------------------------------------------
+// TERMS & CONDITIONS + RECEIVER DETAILS
+// TERMS LEFT / RECEIVER RIGHT
+// ---------------------------------------------------------
 
-  const combinedH =
-    100;
+const combinedH = 100;
 
-  const receiverW =
-    contentW * 0.38;
+const termsW = contentW * 0.62;
+const receiverW = contentW - termsW;
 
-  const termsW =
-    contentW - receiverW;
+// Outer box
+drawCell(
+  doc,
+  margin,
+  y,
+  contentW,
+  combinedH
+);
 
-  // One outer box
-  drawCell(
-    doc,
-    margin,
-    y,
-    contentW,
-    combinedH
-  );
+// Vertical divider
+doc.setDrawColor(30, 100, 160);
+doc.setLineWidth(0.8);
 
-  // Vertical divider
-  doc.setDrawColor(
-    30,
-    100,
-    160
-  );
+doc.line(
+  margin + termsW,
+  y,
+  margin + termsW,
+  y + combinedH
+);
 
-  doc.setLineWidth(
-    0.8
-  );
+// ---------------------------------------------------------
+// TERMS & CONDITIONS - LEFT
+// ---------------------------------------------------------
 
-  doc.line(
-    margin + receiverW,
-    y,
-    margin + receiverW,
-    y + combinedH
-  );
+const termsX = margin;
 
-  // ---------------------------------------------------------
-  // RECEIVER DETAILS
-  // ---------------------------------------------------------
+doc.setFontSize(9);
 
-  doc.setFontSize(9);
+doc.setFont(
+  "NotoSans",
+  "bold"
+);
 
-  doc.setFont(
-    "NotoSans",
-    "bold"
-  );
+doc.text(
+  "TERMS & CONDITIONS",
+  termsX + 8,
+  y + 16
+);
 
-  doc.text(
-    "RECEIVER DETAILS",
-    margin + 8,
-    y + 16
-  );
+const terms = [
+  "Burn/Water/Physical damages are Not Covered.",
+  "Please back-up your data on your hard disk drive before sending the PC for Repairs.",
+  "Our workshop will not be held liable for any loss of data.",
+  "Goods once sold will not be taken back.",
+  "Cheque return charges: Rs. 750/-.",
+];
 
-  doc.setFontSize(8);
+doc.setFontSize(7.5);
 
-  doc.setFont(
-    "NotoSans",
-    "normal"
-  );
+doc.setFont(
+  "NotoSans",
+  "normal"
+);
 
-  doc.text(
-    "Name: __________________",
-    margin + 8,
-    y + 38
-  );
+let termY = y + 32;
 
-  doc.text(
-    "Sign: ___________________",
-    margin + 8,
-    y + 59
-  );
+terms.forEach(
+  (term, index) => {
 
-  // Existing signatory retained
-  doc.setFont(
-    "NotoSans",
-    "bold"
-  );
-
-  doc.text(
-    "For- Aakash S Sonawane",
-    margin + 8,
-    y + 81
-  );
-
-  // ---------------------------------------------------------
-  // TERMS & CONDITIONS
-  // ---------------------------------------------------------
-
-  const termsX =
-    margin + receiverW;
-
-  doc.setFontSize(9);
-
-  doc.setFont(
-    "NotoSans",
-    "bold"
-  );
-
-  doc.text(
-    "TERMS & CONDITIONS",
-    termsX + 8,
-    y + 16
-  );
-
-  const terms = [
-    "Burn/Water/Physical damages are Not Covered.",
-    "Please back-up your data on your hard disk drive before sending the PC for Repairs.",
-    "Our workshop will not be held liable for any loss of data.",
-  ];
-
-  doc.setFontSize(7.5);
-
-  doc.setFont(
-    "NotoSans",
-    "normal"
-  );
-
-  let termY =
-    y + 32;
-
-  terms.forEach(
-    (term, index) => {
-      const lines =
-        doc.splitTextToSize(
-          `${index + 1}. ${term}`,
-          termsW - 16
-        );
-
-      doc.text(
-        lines,
-        termsX + 8,
-        termY
+    const lines =
+      doc.splitTextToSize(
+        `${index + 1}. ${term}`,
+        termsW - 16
       );
 
-      termY +=
-        lines.length *
-          9 +
-        4;
-    }
-  );
+    doc.text(
+      lines,
+      termsX + 8,
+      termY
+    );
 
-  return (
-    y + combinedH
-  );
+    termY +=
+      lines.length * 9 + 4;
+  }
+);
+
+// ---------------------------------------------------------
+// RECEIVER DETAILS - RIGHT
+// ---------------------------------------------------------
+
+const receiverX =
+  margin + termsW;
+
+doc.setFontSize(8);
+
+doc.setFont(
+  "NotoSans",
+  "bold"
+);
+
+doc.text(
+  "RECEIVER DETAILS",
+  receiverX + 8,
+  y + 18
+);
+
+// doc.text(
+//   "For Aakash s Sonawane",
+//    receiverX + 8,
+//     y + 88
+// );
+
+
+doc.setFont(
+  "NotoSans",
+  "normal"
+);
+
+// ---------------------------------------------------------
+// RECEIVER DETAILS CONTENT
+// ---------------------------------------------------------
+
+doc.text(
+  `Name : ${bill.customerName || "_____________________________"}`,
+  receiverX + 8,
+  y + 38
+);
+
+doc.text(
+  `Sign : ${bill.customerAddress || "_______________________________"}`,
+  receiverX + 8,
+  y + 82
+);
+
+  // doc.text(`For Aakash s Sonawane `, receiverX + 8, y + 88);
+
+
+return y + combinedH;
 }
+
+
 
 export async function downloadBillPdf(
   bill
@@ -1724,20 +1770,12 @@ export async function downloadBillPdf(
   // FOOTER
   // ---------------------------------------------------------
 
-  if (
-    y >
-    pageH - 250
-  ) {
+  if (y > pageH - 250) {
     doc.addPage();
-
     y = 40;
   }
 
-  drawFooterSections(
-    doc,
-    bill,
-    y
-  );
+  drawFooterSections(doc, bill, y);
 
   // ---------------------------------------------------------
   // SAVE PDF
