@@ -15,8 +15,10 @@ export default function BillsList({ refreshKey }) {
   const [loading, setLoading] = useState(true);
   const [downloading, setDownloading] = useState(false);
 
-  async function handleDownload() {
+async function handleDownload() {
   if (downloading) return;
+
+  if (!activeBill) return;
 
   setDownloading(true);
 

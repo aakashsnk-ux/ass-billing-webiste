@@ -31,19 +31,19 @@ export default function NewBill({ prefillClient, clearPrefill, onSaved }) {
   const boxRef = useRef(null);
 
   async function handleDownloadPdf() {
-    if (!activeBill || downloading) return;
+  if (downloading) return;
 
-    setDownloading(true);
+  setDownloading(true);
 
-    try {
-      await downloadBillPdf(activeBill);
-    } catch (e) {
-      console.error("PDF download failed:", e);
-      alert("PDF download failed. Please try again.");
-    } finally {
-      setDownloading(false);
-    }
+  try {
+    await handleSave(true);
+  } catch (e) {
+    console.error("PDF download failed:", e);
+    alert("PDF download failed. Please try again.");
+  } finally {
+    setDownloading(false);
   }
+}
 
   useEffect(() => {
     api
